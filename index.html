@@ -1,4 +1,199 @@
-const firebaseConfig = {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secret Messenger ♡</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ffe1ed, #fff5f8, #fbd2e4);
+      color: #74384f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .app {
+      width: 100%;
+      max-width: 440px;
+      background: #fffafd;
+      border: 1px solid #f7c8dc;
+      border-radius: 25px;
+      box-shadow: 0 12px 40px #c65b8420;
+      overflow: hidden;
+    }
+    header {
+      text-align: center;
+      padding: 25px 18px 20px;
+      background: #ffe7f0;
+      border-bottom: 1px solid #f8d0df;
+    }
+    header h1 { margin: 0 0 8px; font-size: 25px; }
+    header p { margin: 0; font-size: 13px; color: #a2637c; }
+    main { padding: 22px; }
+    .hidden { display: none !important; }
+    label { display: block; margin: 13px 0 6px; font-size: 13px; }
+    input, select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #edbfd1;
+      border-radius: 12px;
+      background: white;
+      color: #74384f;
+      font-size: 15px;
+      outline-color: #df78a1;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 16px;
+      background: #e98bb0;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: wait; }
+    .primary { width: 100%; margin-top: 16px; }
+    .secondary {
+      background: #fff0f6;
+      color: #9b4d6c;
+      border: 1px solid #f2c9da;
+    }
+    .switch {
+      text-align: center;
+      font-size: 13px;
+      margin: 17px 0 0;
+    }
+    .switch button {
+      padding: 4px;
+      background: none;
+      color: #c4517f;
+    }
+    #status {
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: 14px;
+      overflow-wrap: anywhere;
+    }
+    .chat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .chat-top h2 { font-size: 18px; margin: 0; }
+    #messages {
+      height: 340px;
+      overflow-y: auto;
+      background: #fff2f7;
+      border: 1px solid #f8d8e5;
+      border-radius: 17px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bubble {
+      max-width: 85%;
+      padding: 10px 12px;
+      border-radius: 15px;
+      background: white;
+      border: 1px solid #f3d5e1;
+      align-self: flex-start;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+    .bubble.mine {
+      align-self: flex-end;
+      background: #f9cadd;
+      border-color: #f3b9d0;
+    }
+    .sender { font-size: 11px; font-weight: bold; margin-bottom: 5px; }
+    .time { font-size: 10px; opacity: .7; margin-top: 6px; }
+    .composer { display: flex; gap: 8px; margin-top: 12px; }
+    .composer input { min-width: 0; }
+    .composer button { flex-shrink: 0; }
+    .note { font-size: 11px; text-align: center; color: #a2637c; margin: 13px 0 0; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>♡ Secret Messenger ♡</h1>
+    <p>a little private place for us</p>
+  </header>
+
+  <main>
+    <section id="auth">
+      <h2 id="formTitle">Welcome back ♡</h2>
+      <p id="formHint">Log in to your little corner.</p>
+
+      <form id="authForm">
+        <label for="nickname">Your nickname</label>
+        <select id="nickname" required>
+          <option value="Jai">Jai</option>
+          <option value="Hun :3">Hun :3</option>
+        </select>
+
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email"
+          placeholder="you@example.com" required>
+
+        <label for="password">Password</label>
+        <input id="password" type="password"
+          autocomplete="current-password" minlength="6"
+          placeholder="At least 6 characters" required>
+
+        <button class="primary" id="authButton" type="submit">Log in ♡</button>
+      </form>
+
+      <p class="switch" id="switchRow">
+        New here? <button type="button" id="switchMode">Create account</button>
+      </p>
+      <p id="status" role="status"></p>
+    </section>
+
+    <section id="chat" class="hidden">
+      <div class="chat-top">
+        <div>
+          <h2 id="welcome">Hello ♡</h2>
+          <p style="font-size:12px;margin:6px 0 0">our little chat space</p>
+        </div>
+        <button class="secondary" id="logout" type="button">Log out</button>
+      </div>
+
+      <div id="messages" aria-live="polite"></div>
+
+      <form id="sendForm" class="composer">
+        <input id="messageInput" maxlength="1000"
+          placeholder="Write something sweet..." autocomplete="off" required>
+        <button type="submit" id="sendButton">Send ♡</button>
+      </form>
+      <p id="chatStatus" class="note">Connecting to your chat...</p>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
+    signInWithEmailAndPassword, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, query, orderBy,
+    limit, onSnapshot, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
     apiKey: "AIzaSyDB6tyIennw7Annarl36IxUOoNem0zUbZM",
     authDomain: "secret-messenger-6542f.firebaseapp.com",
     projectId: "secret-messenger-6542f",
@@ -7,3 +202,151 @@ const firebaseConfig = {
     appId: "1:416662388019:web:2e3836a32a308fdc01d246",
     measurementId: "G-M74RZH9H5S"
   };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const $ = id => document.getElementById(id);
+  let createMode = false;
+  let currentNickname = "Jai";
+  let stopMessages = null;
+
+  function status(message) {
+    $("status").textContent = message;
+  }
+
+  function errorMessage(error) {
+    const messages = {
+      "auth/email-already-in-use": "That email already has an account. Log in instead.",
+      "auth/invalid-email": "Please enter a valid email.",
+      "auth/weak-password": "Choose a stronger password with at least 6 characters.",
+      "auth/invalid-credential": "Email or password is incorrect.",
+      "auth/operation-not-allowed": "Enable Email/Password in Firebase Authentication.",
+      "auth/too-many-requests": "Too many attempts. Please wait and try again.",
+      "permission-denied": "Firestore denied access. Check your database rules.",
+      "unavailable": "Connection problem. Check your internet and try again."
+    };
+    return messages[error.code] ||
+      (error.message || "Something went wrong.").slice(0, 220);
+  }
+
+  $("switchMode").addEventListener("click", () => {
+    createMode = !createMode;
+    $("formTitle").textContent = createMode ? "Create your account ♡" : "Welcome back ♡";
+    $("formHint").textContent = createMode
+      ? "Make an account for your nickname."
+      : "Log in to your little corner.";
+    $("authButton").textContent = createMode ? "Create account ♡" : "Log in ♡";
+    $("switchRow").firstChild.textContent =
+      createMode ? "Already have an account? " : "New here? ";
+    $("switchMode").textContent = createMode ? "Log in" : "Create account";
+    $("password").autocomplete = createMode ? "new-password" : "current-password";
+    status("");
+  });
+
+  $("authForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    currentNickname = $("nickname").value;
+    $("authButton").disabled = true;
+    status("Please wait...");
+    try {
+      if (createMode) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    } catch (error) {
+      status(errorMessage(error));
+    } finally {
+      $("authButton").disabled = false;
+    }
+  });
+
+  $("logout").addEventListener("click", async () => {
+    try { await signOut(auth); }
+    catch (error) { $("chatStatus").textContent = errorMessage(error); }
+  });
+
+  onAuthStateChanged(auth, user => {
+    if (stopMessages) {
+      stopMessages();
+      stopMessages = null;
+    }
+    $("auth").classList.toggle("hidden", !!user);
+    $("chat").classList.toggle("hidden", !user);
+
+    if (!user) return;
+
+    currentNickname = $("nickname").value || "Jai";
+    $("welcome").textContent = "Hello, " + currentNickname + " ♡";
+    $("messages").replaceChildren();
+    $("chatStatus").textContent = "Loading messages...";
+
+    const q = query(
+      collection(db, "messages"),
+      orderBy("createdAt", "asc"),
+      limit(200)
+    );
+
+    stopMessages = onSnapshot(q, snapshot => {
+      const box = $("messages");
+      box.replaceChildren();
+
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const bubble = document.createElement("div");
+        bubble.className = "bubble" +
+          (data.senderId === user.uid ? " mine" : "");
+
+        const sender = document.createElement("div");
+        sender.className = "sender";
+        sender.textContent = data.sender || "Someone";
+
+        const body = document.createElement("div");
+        body.textContent = data.text || "";
+
+        const time = document.createElement("div");
+        time.className = "time";
+        time.textContent = data.createdAt?.toDate
+          ? data.createdAt.toDate().toLocaleString()
+          : "Just sent";
+
+        bubble.append(sender, body, time);
+        box.appendChild(bubble);
+      });
+
+      box.scrollTop = box.scrollHeight;
+      $("chatStatus").textContent = "Connected ♡";
+    }, error => {
+      $("chatStatus").textContent = errorMessage(error);
+    });
+  });
+
+  $("sendForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const user = auth.currentUser;
+    const text = $("messageInput").value.trim();
+    if (!user || !text) return;
+
+    $("sendButton").disabled = true;
+    try {
+      await addDoc(collection(db, "messages"), {
+        senderId: user.uid,
+        sender: currentNickname,
+        text,
+        createdAt: serverTimestamp()
+      });
+      $("messageInput").value = "";
+      $("chatStatus").textContent = "Message sent ♡";
+    } catch (error) {
+      $("chatStatus").textContent = errorMessage(error);
+    } finally {
+      $("sendButton").disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
